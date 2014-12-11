@@ -1,9 +1,9 @@
 var CachingWriter = require('broccoli-caching-writer');
 var ES6Transpiler = require('es6-module-transpiler').Compiler;
-var helpers = require('broccoli-kitchen-sink-helpers');
 var path = require('path');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
+var multiGlob = require('./multiGlob');
 
 module.exports = CachingWriter.extend({
   enforceSingleInputTree: true,
@@ -18,7 +18,7 @@ module.exports = CachingWriter.extend({
 
   updateCache: function(inDir, outDir) {
     this.seen = {};
-    helpers.multiGlob(this.options.inputFiles, {cwd: inDir})
+    multiGlob(this.options.inputFiles, {cwd: inDir})
       .forEach(function(relativePath) {
         this.handleFile(inDir, outDir, relativePath);
       }.bind(this));
