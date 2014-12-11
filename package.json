@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "broccoli-caching-writer": "git://github.com/ef4/broccoli-caching-writer#master",
+    "broccoli-funnel": "^0.1.6",
     "broccoli-kitchen-sink-helpers": "^0.2.5",
-    "broccoli-sourcemap-concat": "^0.1.1",
+    "broccoli-merge-trees": "^0.2.1",
+    "broccoli-sourcemap-concat": "^0.2.0",
     "es6-module-transpiler": "^0.3.6",
     "mkdirp": "^0.5.0"
   },
