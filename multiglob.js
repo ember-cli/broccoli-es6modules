@@ -1,3 +1,7 @@
+// the multiGlob from broccoli-kitchen-sink-helpers is currently
+// broken due to upstream changes in glob. Putting this here so I can
+// lock down my own glob version directly, until I can switch to Funnel.
+
 var glob = require('glob');
 
 module.exports = function(globs, globOptions) {
