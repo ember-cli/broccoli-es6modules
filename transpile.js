@@ -3,7 +3,8 @@ var ES6Transpiler = require('es6-module-transpiler').Compiler;
 var path = require('path');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
-var multiGlob = require('./multiGlob');
+var helpers = require('broccoli-kitchen-sink-helpers');
+var multiGlob = require('./multiglob');
 
 module.exports = CachingWriter.extend({
   enforceSingleInputTree: true,
@@ -14,14 +15,17 @@ module.exports = CachingWriter.extend({
       throw new Error("must specify inputFiles");
     }
     this.options = options;
+    this.transpilerCache = {};
   },
 
   updateCache: function(inDir, outDir) {
     this.seen = {};
+    this.newTranspilerCache = {};
     multiGlob(this.options.inputFiles, {cwd: inDir})
       .forEach(function(relativePath) {
         this.handleFile(inDir, outDir, relativePath);
       }.bind(this));
+    this.transpilerCache = this.newTranspilerCache;
   },
 
   handleFile: function(inDir, outDir, relativePath) {
@@ -30,16 +34,37 @@ module.exports = CachingWriter.extend({
       return;
     }
     this.seen[moduleName] = true;
+
     var fullInputPath = path.join(inDir, relativePath);
     var fullOutputPath = path.join(outDir, relativePath);
-    var compiler = new ES6Transpiler(fs.readFileSync(fullInputPath, 'utf-8'), moduleName);
-    patchRelativeImports(moduleName, compiler);
+
+    var entry = this.transpileThroughCache(
+      moduleName,
+      fs.readFileSync(fullInputPath, 'utf-8')
+    );
+
     mkdirp.sync(path.dirname(fullOutputPath));
-    fs.writeFileSync(fullOutputPath, compiler.toAMD());
-    compiler.imports.forEach(function (importNode) {
-      var moduleName = importNode.source.value;
-      this.handleFile(inDir, outDir, moduleName.replace(/\.js$/,'') + '.js');
+    fs.writeFileSync(fullOutputPath, entry.amd);
+    entry.imports.forEach(function (filename) {
+      this.handleFile(inDir, outDir, filename);
     }.bind(this));
+  },
+
+  transpileThroughCache: function(moduleName, source) {
+    var key = helpers.hashStrings([moduleName, source]);
+    var entry = this.transpilerCache[key];
+    if (entry) {
+      return this.newTranspilerCache[key] = entry;
+    }
+    var compiler = new ES6Transpiler(source, moduleName);
+    patchRelativeImports(moduleName, compiler);
+    var imports = compiler.imports.map(function (importNode) {
+      return importNode.source.value.replace(/\.js$/,'') + '.js';
+    });
+    return this.newTranspilerCache[key] = {
+      amd: compiler.toAMD(),
+      imports: imports
+    };
   },
 
   shouldIgnore: function(moduleName) {
