@@ -10,7 +10,6 @@ module.exports = CachingWriter.extend({
   enforceSingleInputTree: true,
 
   init: function(inputTree, options) {
-    CachingWriter.apply(this, arguments);
     if (!options || !options.inputFiles) {
       throw new Error("must specify inputFiles");
     }
