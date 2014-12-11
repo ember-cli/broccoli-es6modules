@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": "https://github.com/ef4/broccoli-es6modules",
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "broccoli-caching-writer": "git://github.com/ef4/broccoli-caching-writer#master",
     "broccoli-funnel": "^0.1.6",
