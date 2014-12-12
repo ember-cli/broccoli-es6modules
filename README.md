@@ -1,9 +1,6 @@
-Work in progress
-----------------
+This is a broccoli filter that transpiles every file in its input tree
+from ES6 to AMD.
 
-Intended to be a replacement for broccoli-es6-concator that ember-cli
-can use to generate nice sourcemaps.
-
-Next up:
- - needs to cache in the individual transpilation results.
-
+In combination with broccoli-funnel (for choosing which files you
+want) and broccoli-sourcemap-concat, we can build a flexible pipeline
+for distributing ES6 sourcecode to the browser.

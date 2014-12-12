@@ -1,25 +1,73 @@
-var Transpile = require('./transpile');
-var SourceMapConcat = require('broccoli-sourcemap-concat');
-var Funnel = require('broccoli-funnel');
-var merge = require('broccoli-merge-trees');
+var CachingWriter = require('broccoli-caching-writer');
+var ES6Transpiler = require('es6-module-transpiler').Compiler;
+var path = require('path');
+var mkdirp = require('mkdirp');
+var fs = require('fs');
+var helpers = require('broccoli-kitchen-sink-helpers');
+var walkSync = require('walk-sync');
 
-module.exports = function(inputTree, options) {
-  var transpiled = new Transpile(inputTree, options);
+module.exports = CachingWriter.extend({
+  enforceSingleInputTree: true,
 
-  var legacies = [];
-  if (options.loaderFile) {
-    legacies.push(options.loaderFile);
+  init: function() {
+    this.transpilerCache = {};
+  },
+
+  updateCache: function(inDir, outDir) {
+    this.newTranspilerCache = {};
+    walkSync(inDir)
+      .forEach(function(relativePath) {
+        if (relativePath.slice(-1) !== '/') {
+          this.handleFile(inDir, outDir, relativePath);
+        }
+      }.bind(this));
+    this.transpilerCache = this.newTranspilerCache;
+  },
+
+  handleFile: function(inDir, outDir, relativePath) {
+    var moduleName = relativePath.replace(/\.js$/, '');
+    var fullInputPath = path.join(inDir, relativePath);
+    var fullOutputPath = path.join(outDir, relativePath);
+
+    var entry = this.transpileThroughCache(
+      moduleName,
+      fs.readFileSync(fullInputPath, 'utf-8')
+    );
+
+    mkdirp.sync(path.dirname(fullOutputPath));
+    fs.writeFileSync(fullOutputPath, entry.amd);
+  },
+
+  transpileThroughCache: function(moduleName, source) {
+    var key = helpers.hashStrings([moduleName, source]);
+    var entry = this.transpilerCache[key];
+    if (entry) {
+      return this.newTranspilerCache[key] = entry;
+    }
+    var compiler = new ES6Transpiler(source, moduleName);
+    patchRelativeImports(moduleName, compiler);
+    return this.newTranspilerCache[key] = {
+      amd: compiler.toAMD()
+    };
   }
-  if (options.legacyFilesToAppend) {
-    legacies = legacies.concat(options.legacyFilesToAppend);
-  }
+});
 
-  var legacyTree = new Funnel(inputTree, { files: legacies });
-  var both = merge([transpiled, legacyTree]);
-  return new SourceMapConcat(both, {
-    headerFiles: options.loaderFile ? [options.loaderFile] : null,
-    inputFiles: options.inputFiles,
-    outputFile: options.outputFile,
-    footerFiles: options.legacyFilesToAppend
-  });
-};
+
+// This function based on
+// http://github.com/joliss/broccoli-es6-concatenator. MIT Licensed,
+// Copyright 2013 Jo Liss.
+function patchRelativeImports(moduleName, compiler) {
+  for (var i = 0; i < compiler.imports.length; i++) {
+    var importNode = compiler.imports[i];
+    if ((importNode.type !== 'ImportDeclaration' &&
+         importNode.type !== 'ModuleDeclaration') ||
+        !importNode.source ||
+        importNode.source.type !== 'Literal' ||
+        !importNode.source.value) {
+      throw new Error('Internal error: Esprima import node has unexpected structure');
+    }
+    if (importNode.source.value.slice(0, 1) === '.') {
+      importNode.source.value = path.join(moduleName, '..', importNode.source.value).replace(/\\/g, '/');
+    }
+  }
+}

@@ -10,14 +10,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "broccoli-caching-writer": "git://github.com/ef4/broccoli-caching-writer#master",
-    "broccoli-funnel": "^0.1.6",
+    "broccoli-caching-writer": "0.5.3",
     "broccoli-kitchen-sink-helpers": "^0.2.5",
-    "broccoli-merge-trees": "^0.2.1",
-    "broccoli-sourcemap-concat": "^0.2.0",
     "es6-module-transpiler": "^0.3.6",
-    "glob": "4.0.4",
-    "mkdirp": "^0.5.0"
+    "mkdirp": "^0.5.0",
+    "walk-sync": "^0.1.3"
   },
   "devDependencies": {
     "broccoli": "^0.13.3"
