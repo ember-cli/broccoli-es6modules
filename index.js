@@ -44,11 +44,16 @@ module.exports = CachingWriter.extend({
     if (entry) {
       return this.newTranspilerCache[key] = entry;
     }
-    var compiler = new ES6Transpiler(source, moduleName);
-    patchRelativeImports(moduleName, compiler);
-    return this.newTranspilerCache[key] = {
-      amd: compiler.toAMD()
-    };
+    try {
+      var compiler = new ES6Transpiler(source, moduleName);
+      patchRelativeImports(moduleName, compiler);
+      return this.newTranspilerCache[key] = {
+        amd: compiler.toAMD()
+      };
+    } catch(err) {
+      err.file = moduleName;
+      throw err;
+    }
   }
 });
 
