@@ -4,7 +4,7 @@
   "description": "An es6 module transpiler & concatenator for broccoli.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": "https://github.com/ef4/broccoli-es6modules",
   "author": "",
@@ -17,6 +17,10 @@
     "walk-sync": "^0.1.3"
   },
   "devDependencies": {
-    "broccoli": "^0.13.3"
+    "broccoli": "^0.13.3",
+    "chai": "^1.10.0",
+    "mkdirp": "^0.5.0",
+    "mocha": "^2.0.1",
+    "rsvp": "^3.0.14"
   }
 }
