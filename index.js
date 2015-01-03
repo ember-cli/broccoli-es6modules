@@ -11,6 +11,7 @@ module.exports = CachingWriter.extend({
 
   init: function() {
     this.transpilerCache = {};
+    this.description = 'ES6Modules';
   },
 
   updateCache: function(inDir, outDir) {
