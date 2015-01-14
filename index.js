@@ -1,5 +1,5 @@
 var CachingWriter = require('broccoli-caching-writer');
-var ES6Transpiler = require('es6-module-transpiler').Compiler;
+var esperanto = require('esperanto');
 var path = require('path');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
@@ -46,10 +46,11 @@ module.exports = CachingWriter.extend({
       return this.newTranspilerCache[key] = entry;
     }
     try {
-      var compiler = new ES6Transpiler(source, moduleName);
-      patchRelativeImports(moduleName, compiler);
       return this.newTranspilerCache[key] = {
-        amd: compiler.toAMD()
+        amd: esperanto.toAmd(source, {
+          amdName: moduleName,
+          strict: true
+        }).code
       };
     } catch(err) {
       err.file = moduleName;
@@ -57,23 +58,3 @@ module.exports = CachingWriter.extend({
     }
   }
 });
-
-
-// This function based on
-// http://github.com/joliss/broccoli-es6-concatenator. MIT Licensed,
-// Copyright 2013 Jo Liss.
-function patchRelativeImports(moduleName, compiler) {
-  for (var i = 0; i < compiler.imports.length; i++) {
-    var importNode = compiler.imports[i];
-    if ((importNode.type !== 'ImportDeclaration' &&
-         importNode.type !== 'ModuleDeclaration') ||
-        !importNode.source ||
-        importNode.source.type !== 'Literal' ||
-        !importNode.source.value) {
-      throw new Error('Internal error: Esprima import node has unexpected structure');
-    }
-    if (importNode.source.value.slice(0, 1) === '.') {
-      importNode.source.value = path.join(moduleName, '..', importNode.source.value).replace(/\\/g, '/');
-    }
-  }
-}
