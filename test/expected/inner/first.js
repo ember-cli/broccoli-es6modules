@@ -9,7 +9,8 @@ define("inner/first",
       throw new Error(42);
     }
 
-    __exports__.meaningOfLife = meaningOfLife;function boom() {
+    __exports__.meaningOfLife = meaningOfLife;
+    function boom() {
       throw new Error('boom');
     }
 
