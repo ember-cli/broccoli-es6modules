@@ -6,8 +6,8 @@
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/ef4/broccoli-es6modules",
-  "author": "",
+  "repository": "https://github.com/ember-cli/broccoli-es6modules",
+  "author": "Edward Faulkner <ef@alum.mit.edu>",
   "license": "MIT",
   "dependencies": {
     "broccoli-caching-writer": "0.5.3",
