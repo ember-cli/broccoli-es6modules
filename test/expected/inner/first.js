@@ -1,17 +1,17 @@
-define("inner/first", 
-  ["something","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Something = __dependency1__["default"];
+define('inner/first', ['exports', '../something'], function (exports, Something) {
 
-    function meaningOfLife() {
-      new Something();
-      throw new Error(42);
-    }
+  'use strict';
 
-    __exports__.meaningOfLife = meaningOfLife;function boom() {
-      throw new Error('boom');
-    }
+  exports.meaningOfLife = meaningOfLife;
+  exports.boom = boom;
 
-    __exports__.boom = boom;
-  });
+  function meaningOfLife() {
+    new Something['default']();
+    throw new Error(42);
+  }
+
+  function boom() {
+    throw new Error('boom');
+  }
+
+});
