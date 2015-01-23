@@ -12,7 +12,7 @@
   "dependencies": {
     "broccoli-caching-writer": "0.5.3",
     "broccoli-kitchen-sink-helpers": "^0.2.5",
-    "esperanto": "^0.6.3",
+    "esperanto": "^0.6.4",
     "mkdirp": "^0.5.0",
     "walk-sync": "^0.1.3"
   },
