@@ -22,7 +22,21 @@ describe('broccoli-es6modules', function() {
     builder = new broccoli.Builder(tree);
     return builder.build().then(function(result) {
       expectFile('outer.js').in(result);
+      expectFile('reexport.js').in(result);
       expectFile('inner/first.js').in(result);
+    });
+  });
+
+  it('uses esperantoOptions if provided', function() {
+    var tree = new ES6(fixtures, {
+      esperantoOptions: {
+        _evilES3SafeReExports: true
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('reexport-es3.js').in(result);
     });
   });
 

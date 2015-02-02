@@ -47,15 +47,31 @@ module.exports = CachingWriter.extend({
     }
     try {
       return this.newTranspilerCache[key] = {
-        amd: esperanto.toAmd(source, {
-          amdName: moduleName,
-          absolutePaths: true,
-          strict: true
-        }).code
+        amd: esperanto.toAmd(
+          source,
+          this.generateEsperantoOptions(moduleName)
+        ).code
       };
     } catch(err) {
       err.file = moduleName;
       throw err;
     }
+  },
+
+  generateEsperantoOptions: function(moduleName) {
+    var providedOptions = this.esperantoOptions || {};
+    var result = {
+      _evilES3SafeReExports: false,
+      absolutePaths: true,
+      strict: true
+    };
+
+    for (var keyName in providedOptions) {
+      result[keyName] = providedOptions[keyName];
+    }
+
+    result.amdName = moduleName;
+
+    return result;
   }
 });
