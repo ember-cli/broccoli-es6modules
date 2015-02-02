@@ -49,6 +49,7 @@ module.exports = CachingWriter.extend({
       return this.newTranspilerCache[key] = {
         amd: esperanto.toAmd(source, {
           amdName: moduleName,
+          absolutePaths: true,
           strict: true
         }).code
       };
