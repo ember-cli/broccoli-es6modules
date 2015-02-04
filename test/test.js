@@ -40,6 +40,30 @@ describe('broccoli-es6modules', function() {
     });
   });
 
+  it('complies to cjs if format = cjs', function() {
+    var tree = new ES6(fixtures, {
+      format: 'cjs'
+    });
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('outer.js', 'cjs').in(result);
+      expectFile('reexport.js', 'cjs').in(result);
+      expectFile('inner/first.js', 'cjs').in(result);
+    });
+  });
+
+  it('complies to cjs if format = umd', function() {
+    var tree = new ES6(fixtures, {
+      format: 'umd'
+    });
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('outer.js', 'umd').in(result);
+      expectFile('reexport.js', 'umd').in(result);
+      expectFile('inner/first.js', 'umd').in(result);
+    });
+  });
+
   afterEach(function() {
     if (builder) {
       return builder.cleanup();
@@ -47,19 +71,20 @@ describe('broccoli-es6modules', function() {
   });
 });
 
-
-
-function expectFile(filename) {
+function expectFile(filename, format) {
   function inner(result) {
+
+    format = format || 'amd';
+
     var actualContent = fs.readFileSync(path.join(result.directory, filename), 'utf-8');
     mkdirp.sync(path.dirname(path.join(__dirname, 'actual', filename)));
     fs.writeFileSync(path.join(__dirname, 'actual', filename), actualContent);
 
     var expectedContent;
     try {
-      expectedContent = fs.readFileSync(path.join(__dirname, 'expected', filename), 'utf-8');
+      expectedContent = fs.readFileSync(path.join(__dirname, 'expected', format, filename), 'utf-8');
     } catch (err) {
-      console.warn("Missing expcted file: " + path.join(__dirname, 'expected', filename));
+      console.warn("Missing expcted file: " + path.join(__dirname, 'expected', format, filename));
     }
 
     expect(actualContent).to.equal(expectedContent, "discrepancy in " + filename);
