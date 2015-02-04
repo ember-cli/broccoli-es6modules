@@ -12,6 +12,14 @@ module.exports = CachingWriter.extend({
   init: function() {
     this.transpilerCache = {};
     this.description = 'ES6Modules';
+
+    var formatToFunc = {
+      amd: 'toAmd',
+      cjs: 'toCjs',
+      umd: 'toUmd'
+    };
+
+    this.toFormat = esperanto[formatToFunc[this.format || 'amd']];
   },
 
   updateCache: function(inDir, outDir) {
@@ -36,7 +44,7 @@ module.exports = CachingWriter.extend({
     );
 
     mkdirp.sync(path.dirname(fullOutputPath));
-    fs.writeFileSync(fullOutputPath, entry.amd);
+    fs.writeFileSync(fullOutputPath, entry.output);
   },
 
   transpileThroughCache: function(moduleName, source) {
@@ -47,7 +55,7 @@ module.exports = CachingWriter.extend({
     }
     try {
       return this.newTranspilerCache[key] = {
-        amd: esperanto.toAmd(
+        output: this.toFormat(
           source,
           this.generateEsperantoOptions(moduleName)
         ).code
@@ -63,7 +71,8 @@ module.exports = CachingWriter.extend({
     var result = {
       _evilES3SafeReExports: false,
       absolutePaths: true,
-      strict: true
+      strict: true,
+      name: moduleName
     };
 
     for (var keyName in providedOptions) {
