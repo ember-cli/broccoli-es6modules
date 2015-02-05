@@ -52,18 +52,6 @@ describe('broccoli-es6modules', function() {
     });
   });
 
-  it('complies to cjs if format = umd', function() {
-    var tree = new ES6(fixtures, {
-      format: 'umd'
-    });
-    builder = new broccoli.Builder(tree);
-    return builder.build().then(function(result) {
-      expectFile('outer.js', 'umd').in(result);
-      expectFile('reexport.js', 'umd').in(result);
-      expectFile('inner/first.js', 'umd').in(result);
-    });
-  });
-
   afterEach(function() {
     if (builder) {
       return builder.cleanup();
