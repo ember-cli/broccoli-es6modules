@@ -15,8 +15,7 @@ module.exports = CachingWriter.extend({
 
     var formatToFunc = {
       amd: 'toAmd',
-      cjs: 'toCjs',
-      umd: 'toUmd'
+      cjs: 'toCjs'
     };
 
     this.toFormat = esperanto[formatToFunc[this.format || 'amd']];
