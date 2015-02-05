@@ -10,15 +10,12 @@ for distributing ES6 sourcecode to the browser.
 
 ```javascript
 //By default compiles to AMD
-var transpileES6 = require('broccoli-es6modules');
-var tree = transpileES6(originalTree);
+var TranspileES6 = require('broccoli-es6modules');
+var tree = new TranspileES6(originalTree);
 
 //Compile to CommonJS or UMD
-var transpileES6 = require('broccoli-es6modules');
-var cjsTree = transpileES6(originalTree, {
+var TranspileES6 = require('broccoli-es6modules');
+var cjsTree = new TranspileES6(originalTree, {
   format: 'cjs'
-});
-var umdTree = transpileES6(originalTree, {
-  format: 'umd'
 });
 ```
