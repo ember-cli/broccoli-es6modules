@@ -1,4 +1,4 @@
-define(['exports', 'npm:vendor/monster', 'ember'], function (exports, monster, Ember) {
+define('outer', ['exports', 'npm:vendor/monster', 'ember'], function (exports, monster, Ember) {
 
   'use strict';
 

@@ -17,32 +17,122 @@ var fixtures = path.join(__dirname, 'fixtures');
 var builder;
 
 describe('broccoli-es6modules', function() {
+  describe('caching', function() {
+    it('avoids a transpile of any unchanged file', function() {
+      var tree = new ES6(fixtures, {
+        format: 'amd',
+        esperantoOptions: {
+          strict: true
+        }
+      });
+
+      // initial build should cache results
+      builder = new broccoli.Builder(tree);
+      return builder.build().then(function(){
+        // subsequent builds will never call transpiler
+        var results = [];
+        var _toFormat = tree.toFormat;
+        tree.toFormat = function(code, opts){
+          results.push(code);
+          return _toFormat.call(this, code, opts);
+        }
+
+
+        return builder.build().then(function() {
+          expect(results).to.be.empty();
+        });
+      });
+    });
+
+    it('re-transpiles any changed files', function() {
+      var tree = new ES6(fixtures, {
+        format: 'amd',
+        esperantoOptions: {
+          strict: true
+        }
+      });
+
+      // initial build should cache results
+      builder = new broccoli.Builder(tree);
+
+      return builder.build().then(function(){
+        var results = [];
+        var _toFormat = tree.toFormat;
+        tree.toFormat = function(code, opts){
+          results.push(code);
+          return _toFormat.call(this, code, opts);
+        }
+
+        var fileName = 'outer.js';
+        var code = 'var x="x";'
+
+        var originalCode = readFile(fileName);
+        touch(fileName, code);
+
+        return builder.build().then(function() {
+          expect(results).to.contain(code);
+        }).finally(function(){
+          // restore contents
+          touch(fileName, originalCode);
+        });
+      });
+    });
+  });
+
   it('transpiles every file', function() {
-    var tree = new ES6(fixtures);
+    var tree = new ES6(fixtures, {
+      format: 'amd',
+      esperantoOptions: {
+        strict: true
+      }
+    });
+
     builder = new broccoli.Builder(tree);
     return builder.build().then(function(result) {
-      expectFile('outer.js').in(result);
-      expectFile('reexport.js').in(result);
-      expectFile('inner/first.js').in(result);
+      expectFile('outer.js', 'amd').in(result);
+      expectFile('reexport.js', 'amd').in(result);
+      expectFile('inner/first.js', 'amd').in(result);
     });
   });
 
   it('uses esperantoOptions if provided', function() {
     var tree = new ES6(fixtures, {
       esperantoOptions: {
-        _evilES3SafeReExports: true
+        _evilES3SafeReExports: true,
+        strict: true,
+        absolutePaths: true
       }
     });
 
     builder = new broccoli.Builder(tree);
     return builder.build().then(function(result) {
-      expectFile('reexport-es3.js').in(result);
+      expectFile('reexport-es3.js', 'amd').in(result);
     });
   });
 
-  it('complies to cjs if format = cjs', function() {
+  it('compiles to amd with names if format = namedAmd', function() {
     var tree = new ES6(fixtures, {
-      format: 'cjs'
+      format: 'namedAmd',
+      esperantoOptions: {
+        strict: true,
+        absolutePaths: true
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('outer.js', 'namedAmd').in(result);
+      expectFile('reexport.js', 'namedAmd').in(result);
+      expectFile('inner/first.js', 'namedAmd').in(result);
+    });
+  });
+
+  it('compiles to cjs if format = cjs', function() {
+    var tree = new ES6(fixtures, {
+      format: 'cjs',
+      esperantoOptions: {
+        strict: true
+      }
     });
     builder = new broccoli.Builder(tree);
     return builder.build().then(function(result) {
@@ -52,6 +142,62 @@ describe('broccoli-es6modules', function() {
     });
   });
 
+  it('warns that you cannot compile to umd without bundling', function() {
+    expect(function(){
+      new ES6(fixtures, {
+        format: 'umd'
+      });
+    }).to.throw(/cannot export to unbundled UMD/);
+
+  });
+
+  it('compiles to a bundled amd format when bundling options are provided', function(){
+    var tree = new ES6(fixtures, {
+      format: 'amd',
+      bundleOptions: {
+        entry: 'bundle.js',
+        name: 'myModule'
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('myModule.js', 'bundledAmd').in(result);
+    });
+  });
+
+  it('compiles to a bundled and named amd format when bundling options are provided', function(){
+    var tree = new ES6(fixtures, {
+      format: 'namedAmd',
+      bundleOptions: {
+        entry: 'bundle.js',
+        name: 'myModule'
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('myModule.js', 'bundledNamedAmd').in(result);
+    });
+  });
+
+  it('compiles to a bundled and named umd format when bundling options are provided', function(){
+    var tree = new ES6(fixtures, {
+      format: 'umd',
+      bundleOptions: {
+        entry: 'bundle.js',
+        name: 'myModule'
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('myModule.js', 'umd').in(result);
+    });
+  });
+
+
+
   afterEach(function() {
     if (builder) {
       return builder.cleanup();
@@ -59,11 +205,27 @@ describe('broccoli-es6modules', function() {
   });
 });
 
+
+function readFile(filename){
+  var file = path.join(__dirname, 'fixtures', filename);
+  return fs.readFileSync(file, 'utf-8');
+}
+
+
+function touch(filename, content) {
+  var file = path.join(__dirname, 'fixtures', filename);
+  fs.writeFileSync(file, content, 'utf-8');
+}
+
+function expectSource(expectedContent) {
+  function inner(actualContent) {
+    expect(actualContent).to.equal(expectedContent);
+  }
+  return { in: inner };
+}
+
 function expectFile(filename, format) {
   function inner(result) {
-
-    format = format || 'amd';
-
     var actualContent = fs.readFileSync(path.join(result.directory, filename), 'utf-8');
     mkdirp.sync(path.dirname(path.join(__dirname, 'actual', filename)));
     fs.writeFileSync(path.join(__dirname, 'actual', filename), actualContent);

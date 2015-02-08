@@ -1,4 +1,4 @@
-define(['exports', '../something'], function (exports, Something) {
+define('inner/first', ['exports', 'something'], function (exports, Something) {
 
   'use strict';
 
