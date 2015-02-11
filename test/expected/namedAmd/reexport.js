@@ -1,4 +1,4 @@
-define(['exports', 'inner/first'], function (exports, meaningOfLife) {
+define('reexport', ['exports', 'inner/first'], function (exports, meaningOfLife) {
 
 	'use strict';
 
