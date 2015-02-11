@@ -100,8 +100,10 @@ module.exports = CachingWriter.extend({
 
     Some defaults are provided:
 
-    For per-file transpilations if the format is 'namedAmd', the 'amdName' option passed to the transpiler
-    for each file will be the files relative file path, with '.js' stripped from it.
+    * For per-file transpilations if the format is 'namedAmd', the 'amdName' option passed to the transpiler
+      for each file will be the files relative file path, with '.js' stripped from it.
+    * For per-file transpilations if `sourceMap` option is provided, the `sourceMapSource` option is passed
+      to the transpiler for each file as the relative file path, with '.js' stripped from it.
 
     So, if you have the following tree:
     ├── inner
@@ -248,9 +250,14 @@ module.exports = CachingWriter.extend({
       options.name = moduleName;
     }
 
+    if (providedOptions.sourceMap) {
+      options.sourceMapSource = moduleName;
+    }
+
     for (var keyName in providedOptions) {
       options[keyName] = providedOptions[keyName];
     }
+
 
     return options;
   }
