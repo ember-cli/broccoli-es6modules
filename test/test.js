@@ -127,6 +127,18 @@ describe('broccoli-es6modules', function() {
     });
   });
 
+  it('sets sourceMapSource if source maps are enabled', function() {
+    var tree = new ES6(fixtures, {
+      esperantoOptions: {
+        sourceMap: 'inline'
+      }
+    });
+
+    var result = tree._generateEsperantoOptions('some-path/here');
+
+    expect(result.sourceMapSource).to.equal('some-path/here');
+  });
+
   it('compiles to cjs if format = cjs', function() {
     var tree = new ES6(fixtures, {
       format: 'cjs',

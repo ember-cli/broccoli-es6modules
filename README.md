@@ -123,8 +123,8 @@ ES6Modules wraps the [esperanto](http://esperantojs.org/) library. All [options 
 esperanto](https://github.com/esperantojs/esperanto/wiki/Converting-a-single-module#options)
 can be provided here. All defaults are identical to those used by esperanto.
 
-Because the ES6Modules uses each file's name as its module name, the esperanto `amdName`
-option is ignored.
+Because the ES6Modules uses each file's name as its module name, the esperanto `amdName` and
+`sourceMapSource` options are ignored.
 
 ### bundleOptions
 ES6Modules wraps the [esperanto](http://esperantojs.org/) library. All [options described for
