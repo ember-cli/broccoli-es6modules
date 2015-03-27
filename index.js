@@ -41,6 +41,7 @@ module.exports = CachingWriter.extend({
     and determine what method to delegate to esperanto for transpiling files.
   */
   init: function() {
+    this._super.init.apply(this, arguments);
     this._transpilerCache = {};
     this.toFormat = esperanto[formatToFunctionName[this.format]];
 
