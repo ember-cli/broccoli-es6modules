@@ -151,13 +151,14 @@ module.exports = CachingWriter.extend({
     var name = this.bundleOptions.name;
     var opts = this._generateEsperantoOptions(name);
     var transpilerName = formatToFunctionName[this.format];
+    var targetExtension = this.targetExtension;
 
     return esperanto.bundle({
       base: inDir,
       entry: this.bundleOptions.entry
     }).then(function(bundle) {
       var compiledModule = bundle[transpilerName](opts);
-      var fullOutputPath = path.join(outDir, name + ".js");
+      var fullOutputPath = path.join(outDir, name + '.' + targetExtension);
 
       return writeFile(fullOutputPath, compiledModule.code);
     });
@@ -181,7 +182,7 @@ module.exports = CachingWriter.extend({
 
     walkSync(inDir)
       .forEach(function(relativePath) {
-        if (relativePath.slice(-1) !== '/') {
+        if (this._shouldProcessFile(relativePath)) {
           this._handleFile(inDir, outDir, relativePath, _newTranspilerCache);
         }
       }, this);
@@ -195,9 +196,10 @@ module.exports = CachingWriter.extend({
     version of the ES6 source.
   */
   _handleFile: function(inDir, outDir, relativePath, newCache) {
-    var moduleName = relativePath.replace(/\.js$/, '');
+    var ext = this._matchingFileExtension(relativePath);
+    var moduleName = relativePath.slice(0, relativePath.length - (ext.length + 1));
     var fullInputPath = path.join(inDir, relativePath);
-    var fullOutputPath = path.join(outDir, relativePath);
+    var fullOutputPath = path.join(outDir, moduleName + '.' + this.targetExtension);
 
     var entry = this._transpileThroughCache(
       moduleName,
@@ -260,5 +262,19 @@ module.exports = CachingWriter.extend({
 
 
     return options;
+  },
+  extensions: ['js'],
+  targetExtension: 'js',
+  _matchingFileExtension: function(relativePath) {
+    for (var i = 0; i < this.extensions.length; i++) {
+      var ext = this.extensions[i];
+      if (relativePath.slice(-ext.length - 1) === '.' + ext) {
+        return ext;
+      }
+    }
+    return null;
+  },
+  _shouldProcessFile: function(relativePath) {
+    return !!this._matchingFileExtension(relativePath);
   }
 });
