@@ -208,7 +208,71 @@ describe('broccoli-es6modules', function() {
     });
   });
 
+  it('compiles with custom source extensions', function(){
+    var tree = new ES6(fixtures, {
+      format: 'amd',
+      extensions: ['es6'],
+      esperantoOptions: {
+        strict: true
+      }
+    });
 
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('custom-ext.js', 'amd').in(result);
+    });
+  });
+
+  it('compiles with more than one source extension', function(){
+    var tree = new ES6(fixtures, {
+      format: 'amd',
+      extensions: ['es6', 'js'],
+      esperantoOptions: {
+        strict: true
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('custom-ext.js', 'amd').in(result);
+      expectFile('reexport.js', 'amd').in(result);
+      expectFile('outer.js', 'amd').in(result);
+    });
+  });
+
+  it('compiles using custom target extensions', function(){
+    var tree = new ES6(fixtures, {
+      format: 'amd',
+      targetExtension: 'es3',
+      esperantoOptions: {
+        strict: true
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('reexport.es3', 'amd').in(result);
+      expectFile('outer.es3', 'amd').in(result);
+    });
+  });
+
+  it('compiles using custom target extensions and source extensions', function(){
+    var tree = new ES6(fixtures, {
+      format: 'amd',
+      extensions: ['es6', 'js'],
+      targetExtension: 'es3',
+      esperantoOptions: {
+        strict: true
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('custom-ext.es3', 'amd').in(result);
+      expectFile('reexport.es3', 'amd').in(result);
+      expectFile('outer.es3', 'amd').in(result);
+    });
+  });
 
   afterEach(function() {
     if (builder) {
@@ -246,7 +310,7 @@ function expectFile(filename, format) {
     try {
       expectedContent = fs.readFileSync(path.join(__dirname, 'expected', format, filename), 'utf-8');
     } catch (err) {
-      console.warn("Missing expcted file: " + path.join(__dirname, 'expected', format, filename));
+      console.warn("Missing expected file: " + path.join(__dirname, 'expected', format, filename));
     }
 
     expect(actualContent).to.equal(expectedContent, "discrepancy in " + filename);
