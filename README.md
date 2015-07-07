@@ -1,5 +1,8 @@
 #broccoli-es6modules
 
+[![Dependency Status](https://david-dm.org/ember-cli/broccoli-es6modules.svg)](https://david-dm.org/ember-cli/broccoli-es6modules)
+[![devDependency Status](https://david-dm.org/ember-cli/broccoli-es6modules/dev-status.svg)](https://david-dm.org/ember-cli/broccoli-es6modules#info=devDependencies)
+
 ES6Modules is a broccoli filter that transpiles source code in a
 project from ES6 modules to ES5 modules in AMD, CJS, or UMD styles.
 
