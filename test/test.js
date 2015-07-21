@@ -127,6 +127,24 @@ describe('broccoli-es6modules', function() {
     });
   });
 
+  it('allows customizing namedAmd module name with function', function() {
+    var tree = new ES6(fixtures, {
+      format: 'namedAmd',
+      formatModuleName: function(moduleName) {
+        return moduleName.replace('subdir/', '');
+      },
+      esperantoOptions: {
+        strict: true,
+        absolutePaths: true
+      }
+    });
+
+    builder = new broccoli.Builder(tree);
+    return builder.build().then(function(result) {
+      expectFile('subdir/custom-name.js', 'namedAmdCustom').in(result);
+    });
+  });
+
   it('sets sourceMapSource if source maps are enabled', function() {
     var tree = new ES6(fixtures, {
       esperantoOptions: {

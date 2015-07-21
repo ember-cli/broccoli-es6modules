@@ -121,6 +121,39 @@ Because this strategy combined with UMD would result in _many_ properties being 
 the `window` object in the browser, `umd` format will throw an error if used without also
 providing `bundleOptions`.
 
+### formatModuleName
+
+An optional function for `namedAmd` module format to customize the module name passed to esperanto.
+
+For example if you have `foo/bar.js`:
+
+```
+export default function() {
+}
+```
+
+and a `formatModuleName` option of:
+
+```
+formatModuleName: function(moduleName) {
+  return moduleName.replace('foo/', '');
+}
+```
+
+
+Esperanto will give you:
+
+```
+define('bar', ['exports'], function(exports) {
+
+  'use strict';
+
+  exports['default'] = function() {
+  }
+
+});
+```
+
 ### esperantoOptions
 ES6Modules wraps the [esperanto](http://esperantojs.org/) library. All [options described for
 esperanto](https://github.com/esperantojs/esperanto/wiki/Converting-a-single-module#options)
