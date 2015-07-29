@@ -245,6 +245,9 @@ module.exports = CachingWriter.extend({
     var options = {};
 
     if (this.format === 'namedAmd') {
+      if (typeof this.formatModuleName === 'function') {
+          moduleName = this.formatModuleName(moduleName);
+      }
       options.amdName = moduleName;
     }
 
