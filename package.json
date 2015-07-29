@@ -1,6 +1,6 @@
 {
   "name": "broccoli-es6modules",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "An es6 module transpiler & concatenator for broccoli.",
   "main": "index.js",
   "scripts": {
