@@ -10,7 +10,7 @@
   "author": "Edward Faulkner <ef@alum.mit.edu>",
   "license": "MIT",
   "dependencies": {
-    "broccoli-caching-writer": "0.5.3",
+    "broccoli-caching-writer": "^1.0.0",
     "broccoli-kitchen-sink-helpers": "^0.2.7",
     "esperanto": "^0.7.3",
     "mkdirp": "^0.5.0",
