@@ -94,6 +94,7 @@ The contents of that file will be any code imported from `main.js`'s import proc
 ## Options
 
 ### format
+
 The ES5 module format to convert to. Available options are:
 
   * ['amd'](http://requirejs.org/docs/whyamd.html#amd)
@@ -155,6 +156,7 @@ define('bar', ['exports'], function(exports) {
 ```
 
 ### esperantoOptions
+
 ES6Modules wraps the [esperanto](http://esperantojs.org/) library. All [options described for
 esperanto](https://github.com/esperantojs/esperanto/wiki/Converting-a-single-module#options)
 can be provided here. All defaults are identical to those used by esperanto.
@@ -163,9 +165,19 @@ Because the ES6Modules uses each file's name as its module name, the esperanto `
 `sourceMapSource` options are ignored.
 
 ### bundleOptions
+
 ES6Modules wraps the [esperanto](http://esperantojs.org/) library. All [options described for
 esperanto bundling](https://github.com/esperantojs/esperanto/wiki/Bundling-multiple-ES6-modules#other-formats-and-options)
 can be provided here. All defaults are identical to those used by esperanto.
 
 The value you provide for `esperantoOptions` will be passed to result of bundling, resulting
 in a single output file.
+
+### extensions
+
+An array of possible file extensions for source files, e.g. `['js']` (the
+default) or `['es6.js']`.
+
+### targetExtension
+
+The extension of the transpiled output files, e.g. `'js'` (the default) or `'es3.js'`.
