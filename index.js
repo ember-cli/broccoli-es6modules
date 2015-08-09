@@ -25,40 +25,36 @@ var umdMesssage = "broccoli-es6modules cannot export to unbundled UMD format. Th
                   "and tells us your use case.";
 
 
-/**
-  ES6Module Plugin.
+module.exports = ES6Modules;
+ES6Modules.prototype = Object.create(CachingWriter.prototype);
+ES6Modules.prototype.constructor = ES6Modules;
+function ES6Modules(inputNode, options) {
+  if (!(this instanceof ES6Modules)) return new ES6Modules(inputNode, options);
 
-  ES6Module inherits from CachingWriter. It's two main hooks are `init` (called
-  when a new instance is created) and `updateCache` (called when any file in the
-  tree is changed, added, or removed).
+  options = options || {};
 
-  See https://github.com/ember-cli/broccoli-es6modules/blob/master/README.md
-  for more details
-*/
-module.exports = CachingWriter.extend({
-  /*
-    Called when ES6Modules is `new`ed. Creates a new cache for transpiled files
-    and determine what method to delegate to esperanto for transpiling files.
-  */
-  init: function() {
-    this._super.apply(this, arguments);
-    this._transpilerCache = {};
-    this.toFormat = esperanto[formatToFunctionName[this.format]];
+  CachingWriter.call(this, [inputNode], {
+    annotation: options.annotation
+  });
 
-    if (this.format === 'umd' && !this.bundleOptions) {
-      throw new Error(umdMesssage);
-    }
-  },
+  if (options.format != null) this.format = options.format;
+  if (options.formatModuleName != null) this.formatModuleName = options.formatModuleName;
+  if (options.bundleOptions != null) this.bundleOptions = options.bundleOptions;
+  if (options.esperantoOptions != null) this.esperantoOptions = options.esperantoOptions;
+  if (options.extensions != null) this.extensions = options.extensions;
+  if (options.targetExtension != null) this.targetExtension = options.targetExtension;
 
-  /**
-    A flag used by ES6Module's parent class CachingWriter to enforce
-    passing only a single tree (and not an array of trees) to a plugin.
+  if (this.format === 'umd' && !this.bundleOptions) {
+    throw new Error(umdMesssage);
+  }
 
-    ES6Modules only works on a single tree at a time, so this is `true`
-    and should be considered read-only (i.e. if you set it to `false`
-    you're going to have a bad time).
-  */
-  enforceSingleInputTree: true,
+  // Method to delegate to esperanto for transpiling files
+  this.toFormat = esperanto[formatToFunctionName[this.format]];
+
+  // Cache that maps previously transpiled files to their resulting
+  // transpiled source
+  this._transpilerCache = {};
+}
 
   /*
     The module format to transpile to.
@@ -71,13 +67,7 @@ module.exports = CachingWriter.extend({
 
     Defaults to 'namedAmd'
   */
-  format: 'namedAmd',
-
-  /*
-    Used by broccoli's serve command when showing relative compile time of
-    any given tree.
-  */
-  description: 'ES6Modules',
+ES6Modules.prototype.format = 'namedAmd';
 
   /*
     ES6Modules has two modes: 1-to-1 per-file transpilation and n-to-1 bundle
@@ -93,7 +83,7 @@ module.exports = CachingWriter.extend({
 
     See http://esperantojs.org/ for a list of options you can pass for bundling.
   */
-  bundleOptions: null,
+ES6Modules.prototype.bundleOptions = null;
 
   /*
     The options to pass to esperanto per file (in per-file mode)
@@ -114,33 +104,14 @@ module.exports = CachingWriter.extend({
     You will have the following module names passed to AMD's `define` call:
     'bundle', 'inner/first', and  'outer'.
   */
-  esperantoOptions: null,
+ES6Modules.prototype.esperantoOptions = null;
 
-
-  /**
-
-    Used to keep a map of files that have been previously transpiled
-    and their resulting transpiled source.
-
-    On subsequent calls to this plugin a cached version of a file
-    is returned if the source hasn't been changed.
-
-    @private
-  */
-  _transpilerCache: null,
-
-  /**
-
-    A hook from CachingWriter's lifecycle, called whenever any file in the
-    source tree has been changed, added, or removed.
-
-    Depending on mode (per-file or bundled), will compile all files in the tree
-    or will create a bundle starting at the entry point.
-
-  */
-  updateCache: function(inDir, outDir) {
-    return this.bundleOptions ? this._updateBundle(inDir, outDir) : this._updateEachFile(inDir, outDir);
-  },
+/*
+  Main entry point. Called by CachingWriter whenever we need to rebuild.
+*/
+ES6Modules.prototype.build = function() {
+  return this.bundleOptions ? this._updateBundle() : this._updateEachFile();
+};
 
   /**
     A hook called if ES6Modules is being used in a n-to-1 bundle.
@@ -148,22 +119,23 @@ module.exports = CachingWriter.extend({
     Begins importing at an entry point and adds a single bundled
     module to the output tree.
   */
-  _updateBundle: function(inDir, outDir){
+ES6Modules.prototype._updateBundle = function() {
+    var self = this;
     var name = this.bundleOptions.name;
     var opts = this._generateEsperantoOptions(name);
     var transpilerName = formatToFunctionName[this.format];
     var targetExtension = this.targetExtension;
 
     return esperanto.bundle({
-      base: inDir,
+      base: this.inputPaths[0],
       entry: this.bundleOptions.entry
     }).then(function(bundle) {
       var compiledModule = bundle[transpilerName](opts);
-      var fullOutputPath = path.join(outDir, name + '.' + targetExtension);
+      var fullOutputPath = path.join(self.outputPath, name + '.' + targetExtension);
 
       return writeFile(fullOutputPath, compiledModule.code);
     });
-  },
+};
 
   /**
     A hook called if ES6Modules is being used in a 1-to-1 per-per file mode
@@ -175,32 +147,32 @@ module.exports = CachingWriter.extend({
 
     Finally, the old cache is overwritten by the new cache.
   */
-  _updateEachFile: function(inDir, outDir){
+ES6Modules.prototype._updateEachFile = function() {
     // this object is passed through the caching process
     // and populated with newly generated or previously cached
     // values. It becomes the new cache;
     var _newTranspilerCache = {};
 
-    walkSync(inDir)
+    walkSync(this.inputPaths[0])
       .forEach(function(relativePath) {
         if (this._shouldProcessFile(relativePath)) {
-          this._handleFile(inDir, outDir, relativePath, _newTranspilerCache);
+          this._handleFile(relativePath, _newTranspilerCache);
         }
       }, this);
 
     this._transpilerCache = _newTranspilerCache;
-  },
+};
 
   /**
     Normalizes module name, input path, and output path
     then calls transpileThroughCache to get a transpiled
     version of the ES6 source.
   */
-  _handleFile: function(inDir, outDir, relativePath, newCache) {
+ES6Modules.prototype._handleFile = function(relativePath, newCache) {
     var ext = this._matchingFileExtension(relativePath);
     var moduleName = relativePath.slice(0, relativePath.length - (ext.length + 1));
-    var fullInputPath = path.join(inDir, relativePath);
-    var fullOutputPath = path.join(outDir, moduleName + '.' + this.targetExtension);
+    var fullInputPath = path.join(this.inputPaths[0], relativePath);
+    var fullOutputPath = path.join(this.outputPath, moduleName + '.' + this.targetExtension);
 
     var entry = this._transpileThroughCache(
       moduleName,
@@ -210,7 +182,7 @@ module.exports = CachingWriter.extend({
 
     mkdirp.sync(path.dirname(fullOutputPath));
     fs.writeFileSync(fullOutputPath, entry.output);
-  },
+};
 
   /**
     Called on every file in a tree when used in per-file mode.
@@ -221,7 +193,7 @@ module.exports = CachingWriter.extend({
     it adds passed the source code along to a transpiler and adds the resulting value
     to the new cache.
   */
-  _transpileThroughCache: function(moduleName, source, newCache) {
+ES6Modules.prototype._transpileThroughCache = function(moduleName, source, newCache) {
     var key = helpers.hashStrings([moduleName, source]);
     var entry = this._transpilerCache[key];
 
@@ -239,9 +211,9 @@ module.exports = CachingWriter.extend({
       err.file = moduleName;
       throw err;
     }
-  },
+};
 
-  _generateEsperantoOptions: function(moduleName) {
+ES6Modules.prototype._generateEsperantoOptions = function(moduleName) {
     var providedOptions = this.esperantoOptions || {};
     var options = {};
 
@@ -266,10 +238,11 @@ module.exports = CachingWriter.extend({
 
 
     return options;
-  },
-  extensions: ['js'],
-  targetExtension: 'js',
-  _matchingFileExtension: function(relativePath) {
+};
+
+ES6Modules.prototype.extensions = ['js'];
+ES6Modules.prototype.targetExtension = 'js';
+ES6Modules.prototype._matchingFileExtension = function(relativePath) {
     for (var i = 0; i < this.extensions.length; i++) {
       var ext = this.extensions[i];
       if (relativePath.slice(-ext.length - 1) === '.' + ext) {
@@ -277,8 +250,8 @@ module.exports = CachingWriter.extend({
       }
     }
     return null;
-  },
-  _shouldProcessFile: function(relativePath) {
+};
+
+ES6Modules.prototype._shouldProcessFile = function(relativePath) {
     return !!this._matchingFileExtension(relativePath);
-  }
-});
+};
