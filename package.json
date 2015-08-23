@@ -1,6 +1,6 @@
 {
   "name": "broccoli-es6modules",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "An es6 module transpiler & concatenator for broccoli.",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "dependencies": {
     "broccoli-caching-writer": "^1.0.0",
     "broccoli-kitchen-sink-helpers": "^0.2.7",
-    "esperanto": "^0.7.3",
+    "esperanto": "0.7.4",
     "mkdirp": "^0.5.0",
     "rsvp": "^3.0.16",
     "walk-sync": "^0.1.3"
