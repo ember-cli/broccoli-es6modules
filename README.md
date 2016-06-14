@@ -3,6 +3,10 @@
 [![Dependency Status](https://david-dm.org/ember-cli/broccoli-es6modules.svg)](https://david-dm.org/ember-cli/broccoli-es6modules)
 [![devDependency Status](https://david-dm.org/ember-cli/broccoli-es6modules/dev-status.svg)](https://david-dm.org/ember-cli/broccoli-es6modules#info=devDependencies)
 
+**Unmaintained! This project is no longer being maintained by the Ember CLI team.**  
+Ember CLI has switched over to the [broccoli-babel-transpiler](https://github.com/babel/broccoli-babel-transpiler) and [ember-cli-babel](https://github.com/babel/ember-cli-babel) plugins.  
+If you would like to take off maintenance of this project please let us know!
+
 ES6Modules is a broccoli filter that transpiles source code in a
 project from ES6 modules to ES5 modules in AMD, CJS, or UMD styles.
 
